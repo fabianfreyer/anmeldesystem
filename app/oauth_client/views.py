@@ -1,4 +1,4 @@
-from flask import redirect, url_for, request, jsonify
+from flask import redirect, url_for, request, jsonify, render_template, session
 from . import oauth_client_blueprint, oauth_remoteapp, saveOAuthToken, getOAuthToken, deleteOAuthToken, oauth_login_required
 
 @oauth_client_blueprint.route('/oauth/login')
@@ -16,15 +16,11 @@ def authorized():
         ))
         return redirect('/')
     saveOAuthToken(resp['access_token'], '')
+    session['me'] = oauth_remoteapp.get('me').data
     return redirect('/')
 
 @oauth_client_blueprint.route('/oauth/logout')
 def logout():
     deleteOAuthToken()
+    session.clear()
     return redirect('/')
-
-@oauth_client_blueprint.route('/')
-@oauth_login_required
-def index():
-    me = oauth_remoteapp.get('me')
-    return jsonify(res = me.data)
